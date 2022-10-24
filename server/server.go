@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"log"
 	"net"
+	"strconv"
 	"sync"
 	"time"
 
@@ -34,10 +35,10 @@ type connectedClient struct {
 	stream grpcChat.Services_ChatServiceServer
 }
 
-// TODO: perhaps better name
 // TODO: Should this be stored in server
 var messagesObject = messages{}
 var connectedClientStreams = []connectedClient{}
+var connectedClientsAmount int
 
 var serverName = flag.String("name", "default", "Senders name")
 var port = flag.String("port", "4500", "Server port")
@@ -49,6 +50,7 @@ func main() {
 }
 
 func launchServer() {
+	connectedClientsAmount = 0
 	list, err := net.Listen("tcp", fmt.Sprintf("localhost:%s", *port))
 	if err != nil {
 		log.Printf("Server %s: Failed to listen on port %s: %v", *serverName, *port, err)
@@ -68,19 +70,21 @@ func launchServer() {
 }
 
 func (s *Server) ChatService(msgStream grpcChat.Services_ChatServiceServer) error {
+	connectedClientID := strconv.Itoa(connectedClientsAmount)
 	connectedClientStreams = append(connectedClientStreams, connectedClient{
 		stream: msgStream,
-		name:   "noget", //TODO: fix så man kan fjerne stream
+		name:   connectedClientID,
 	})
+	connectedClientsAmount++ //TODO: not atomic with read above
 
 	errorChannel := make(chan error)
-	go receiveStream(msgStream, errorChannel)
+	go receiveStream(msgStream, connectedClientID, errorChannel)
 	go messagesListener(msgStream, errorChannel)
 
 	return <-errorChannel
 }
 
-func receiveStream(msgStream grpcChat.Services_ChatServiceServer, errorChannel chan error) {
+func receiveStream(msgStream grpcChat.Services_ChatServiceServer, connectedClientID string, errorChannel chan error) {
 	//TODO: Add the stream of client to list of streams
 	for {
 		msg, err := msgStream.Recv()
@@ -90,13 +94,21 @@ func receiveStream(msgStream grpcChat.Services_ChatServiceServer, errorChannel c
 			return
 		}
 		if msg.Message == "bye" {
-			//TODO: remove from client list
 			ack := &grpcChat.ServerMessage{
 				Message:  fmt.Sprintf("GoodBye: %s", msg.SenderID),
 				SenderID: *serverName,
 			}
 			msgStream.Send(ack)
-			//TODO: fjern client fra connectedClientStreams
+
+			var streamIndex int
+			for i := 0; i < len(connectedClientStreams); i++ {
+				if connectedClientStreams[i].name == connectedClientID {
+					streamIndex = i
+					break
+				}
+			}
+			connectedClientStreams[streamIndex] = connectedClientStreams[len(connectedClientStreams)-1]
+			connectedClientStreams = connectedClientStreams[:len(connectedClientStreams)-1]
 			errorChannel <- err
 			return
 		}

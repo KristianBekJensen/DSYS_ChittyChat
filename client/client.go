@@ -73,20 +73,30 @@ func connectToServer() {
 func (clientHandle *clientHandle) bindStdinToServerStream(shutDown chan bool) {
 
 	fmt.Println("Binding stdin to serverstream")
-	for {
-		reader := bufio.NewReader(os.Stdin)
+	reader := bufio.NewReader(os.Stdin)
+
+	getStdIn := func() string {
 		clientMessage, err := reader.ReadString('\n')
 		if err != nil {
 			log.Fatalf("couldn't read from console: %v", err)
 		}
 		clientMessage = strings.Trim(clientMessage, "\r\n")
+		return clientMessage
+	}
+
+	for {
+		clientMessage := getStdIn()
+		for len([]rune(clientMessage)) > 128 {
+			fmt.Printf("Too many characters current: %d Max: 128\n", len([]rune(clientMessage)))
+			clientMessage = getStdIn()
+		}
 
 		message := &grpcChat.ClientMessage{
 			SenderID: *clientsName, //TODO: Sender ID
 			Message:  clientMessage,
 		}
 
-		err = clientHandle.stream.Send(message)
+		err := clientHandle.stream.Send(message)
 		if err != nil {
 			log.Printf("Error when sending message to stream: %v", err)
 		}
