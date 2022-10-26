@@ -1,0 +1,29 @@
+2022/10/26 12:02:38 .:server is starting:.
+2022/10/26 12:02:38 Server default: Listening at 127.0.0.1:4500
+2022/10/26 12:05:30 .:server is starting:.
+2022/10/26 12:05:30 Server default: Listening at 127.0.0.1:4500
+2022/10/26 12:05:59 Message recieved as: hej
+from: second
+ at lamport time stamp: 5
+2022/10/26 12:06:05 Message recieved as: dssdfsdf
+from: first
+ at lamport time stamp: 7
+2022/10/26 12:15:33 Something went wrong: rpc error: code = Canceled desc = context canceled
+2022/10/26 12:15:53 .:server is starting:.
+2022/10/26 12:15:53 Server default: Listening at 127.0.0.1:4500
+2022/10/26 12:16:03 Message recieved as: hej
+from: first
+ at lamport time stamp: 5
+2022/10/26 12:16:04 Something went wrong: rpc error: code = Canceled desc = context canceled
+2022/10/26 12:16:53 Something went wrong: rpc error: code = Canceled desc = context canceled
+2022/10/26 12:16:58 .:server is starting:.
+2022/10/26 12:16:58 Server default: Listening at 127.0.0.1:4500
+2022/10/26 12:17:06 Message recieved as: hej
+from: first
+ at lamport time stamp: 5
+2022/10/26 12:17:08 Something went wrong: rpc error: code = Canceled desc = context canceled
+2022/10/26 12:18:46 Something went wrong: rpc error: code = Canceled desc = context canceled
+2022/10/26 12:18:48 Message recieved as: greetingSecretCode
+from: first
+ at lamport time stamp: 9
+2022/10/26 12:18:49 Something went wrong: rpc error: code = Canceled desc = context canceled

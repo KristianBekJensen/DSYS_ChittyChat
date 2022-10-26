@@ -23,6 +23,7 @@ const _ = grpc.SupportPackageIsVersion7
 // For semantics around ctx use and closing/ending streaming RPCs, please refer to https://pkg.go.dev/google.golang.org/grpc/?tab=doc#ClientConn.NewStream.
 type ServicesClient interface {
 	ChatService(ctx context.Context, opts ...grpc.CallOption) (Services_ChatServiceClient, error)
+	ClientGreeting(ctx context.Context, in *Id, opts ...grpc.CallOption) (*Id, error)
 }
 
 type servicesClient struct {
@@ -64,11 +65,21 @@ func (x *servicesChatServiceClient) Recv() (*ServerMessage, error) {
 	return m, nil
 }
 
+func (c *servicesClient) ClientGreeting(ctx context.Context, in *Id, opts ...grpc.CallOption) (*Id, error) {
+	out := new(Id)
+	err := c.cc.Invoke(ctx, "/proto.Services/ClientGreeting", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 // ServicesServer is the server API for Services service.
 // All implementations must embed UnimplementedServicesServer
 // for forward compatibility
 type ServicesServer interface {
 	ChatService(Services_ChatServiceServer) error
+	ClientGreeting(context.Context, *Id) (*Id, error)
 	mustEmbedUnimplementedServicesServer()
 }
 
@@ -78,6 +89,9 @@ type UnimplementedServicesServer struct {
 
 func (UnimplementedServicesServer) ChatService(Services_ChatServiceServer) error {
 	return status.Errorf(codes.Unimplemented, "method ChatService not implemented")
+}
+func (UnimplementedServicesServer) ClientGreeting(context.Context, *Id) (*Id, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method ClientGreeting not implemented")
 }
 func (UnimplementedServicesServer) mustEmbedUnimplementedServicesServer() {}
 
@@ -118,13 +132,36 @@ func (x *servicesChatServiceServer) Recv() (*ClientMessage, error) {
 	return m, nil
 }
 
+func _Services_ClientGreeting_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(Id)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(ServicesServer).ClientGreeting(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/proto.Services/ClientGreeting",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(ServicesServer).ClientGreeting(ctx, req.(*Id))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 // Services_ServiceDesc is the grpc.ServiceDesc for Services service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
 var Services_ServiceDesc = grpc.ServiceDesc{
 	ServiceName: "proto.Services",
 	HandlerType: (*ServicesServer)(nil),
-	Methods:     []grpc.MethodDesc{},
+	Methods: []grpc.MethodDesc{
+		{
+			MethodName: "ClientGreeting",
+			Handler:    _Services_ClientGreeting_Handler,
+		},
+	},
 	Streams: []grpc.StreamDesc{
 		{
 			StreamName:    "ChatService",

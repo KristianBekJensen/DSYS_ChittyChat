@@ -5,6 +5,7 @@ import (
 	"context"
 	"flag"
 	"fmt"
+	"io"
 	"log"
 	"os"
 	"strings"
@@ -25,12 +26,21 @@ type clientHandle struct {
 	clientName string
 }
 
+var lamportTimestamp int64
+
 func main() {
 	flag.Parse()
 
-	fmt.Println("--- CLIENT APP ---")
+	file, err := os.OpenFile(fmt.Sprintf("client_%s", *clientsName), os.O_RDWR|os.O_CREATE|os.O_APPEND, 0666)
+	if err != nil {
+		log.Fatalf("error opening file: %v", err)
+	}
+	defer file.Close()
 
-	fmt.Println("--- join Server ---")
+	multiWriter := io.MultiWriter(os.Stdout, file)
+	log.SetOutput(multiWriter)
+
+	fmt.Println("--- CLIENT APP ---")
 	connectToServer()
 	defer ServerConn.Close()
 
@@ -39,6 +49,11 @@ func main() {
 	if err != nil {
 		log.Fatalf("Failed to call ChatService: %v", err)
 	}
+	greeting := &grpcChat.ClientMessage{
+		Message:  "greetingSecretCode",
+		SenderID: *clientsName,
+	}
+	msgStream.Send(greeting)
 	clientHandle := clientHandle{
 		stream:     msgStream,
 		clientName: *clientsName,
@@ -72,7 +87,7 @@ func connectToServer() {
 
 func (clientHandle *clientHandle) bindStdinToServerStream(shutDown chan bool) {
 
-	fmt.Println("Binding stdin to serverstream")
+	log.Println("Binding stdin to serverstream")
 	reader := bufio.NewReader(os.Stdin)
 
 	getStdIn := func() string {
@@ -87,13 +102,16 @@ func (clientHandle *clientHandle) bindStdinToServerStream(shutDown chan bool) {
 	for {
 		clientMessage := getStdIn()
 		for len([]rune(clientMessage)) > 128 {
-			fmt.Printf("Too many characters current: %d Max: 128\n", len([]rune(clientMessage)))
+			log.Printf("Too many characters current: %d Max: 128\n", len([]rune(clientMessage)))
 			clientMessage = getStdIn()
 		}
 
+		lamportTimestamp++
+
 		message := &grpcChat.ClientMessage{
-			SenderID: *clientsName, //TODO: Sender ID
-			Message:  clientMessage,
+			SenderID:    *clientsName,
+			Message:     clientMessage,
+			LamportTime: lamportTimestamp,
 		}
 
 		err := clientHandle.stream.Send(message)
@@ -101,7 +119,7 @@ func (clientHandle *clientHandle) bindStdinToServerStream(shutDown chan bool) {
 			log.Printf("Error when sending message to stream: %v", err)
 		}
 		if message.Message == "bye" {
-			fmt.Println("Shutting down")
+			log.Println("Shutting down")
 			shutDown <- true
 		}
 	}
@@ -113,6 +131,26 @@ func (clientHandle *clientHandle) streamListener(shutDown chan bool) {
 		if err != nil {
 			log.Printf("Couldn't receive message from server: %v", err)
 		}
-		fmt.Printf("%s : %s \n", msg.SenderID, msg.Message)
+		if lamportTimestamp < msg.LamportTime {
+			lamportTimestamp = msg.LamportTime
+		}
+		log.Printf("%s : %s : lamporttime %d \n", msg.SenderID, msg.Message, msg.LamportTime)
 	}
+}
+
+func (clientHandle *clientHandle) sendMessage(clientMessage string) {
+
+	lamportTimestamp++
+
+	message := &grpcChat.ClientMessage{
+		SenderID:    *clientsName,
+		Message:     clientMessage,
+		LamportTime: lamportTimestamp,
+	}
+
+	err := clientHandle.stream.Send(message)
+	if err != nil {
+		log.Printf("Error when sending message to stream: %v", err)
+	}
+
 }

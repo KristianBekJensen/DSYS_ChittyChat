@@ -5,15 +5,17 @@ option go_package = "github.com/kbekj/DSYS_ChittyChat/proto";
 package proto;
 
 service Services{
-rpc ChatService(stream ClientMessage) returns (stream ServerMessage);
+    rpc ChatService(stream ClientMessage) returns (stream ServerMessage);
 }
 
 message ClientMessage {
     string senderID = 1;
     string message = 2;
+    int64 lamportTime = 3;
 }
 
 message ServerMessage {
     string senderID = 1;
     string message = 2;
+    int64 lamportTime = 3;
 }

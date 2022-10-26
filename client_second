@@ -1,0 +1,9 @@
+2022/10/26 12:17:01 client second: Attempts to dial on port 4500
+2022/10/26 12:17:01 the connection is:  READY
+2022/10/26 12:17:01 Binding stdin to serverstream
+2022/10/26 12:17:01 default : Participant 0 joined Chitty-Chat at Lamport time 1 : lamporttime 1 
+2022/10/26 12:17:01 default : Participant second joined Chitty-Chat at Lamport time 2 : lamporttime 2 
+2022/10/26 12:17:05 default : Participant 1 joined Chitty-Chat at Lamport time 3 : lamporttime 3 
+2022/10/26 12:17:05 default : Participant first joined Chitty-Chat at Lamport time 4 : lamporttime 4 
+2022/10/26 12:17:06 first : hej : lamporttime 6 
+2022/10/26 12:17:08 Shutting down
