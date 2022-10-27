@@ -119,7 +119,7 @@ func (clientHandle *clientHandle) streamListener(shutDown chan bool) {
 		if lamportTimestamp < msg.LamportTime {
 			lamportTimestamp = msg.LamportTime
 		}
-		log.Printf("%s : %s : lamporttime %d \n", msg.SenderID, msg.Message, msg.LamportTime)
+		log.Printf("%s : %s : at lamporttime %d \n", msg.SenderID, msg.Message, msg.LamportTime)
 	}
 }
 

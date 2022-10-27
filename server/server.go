@@ -42,7 +42,7 @@ var connectedClientStreams = []connectedClient{}
 var connectedClientsAmount int
 var lamportTimestamp int64
 
-var serverName = flag.String("name", "default", "Senders name")
+var serverName = flag.String("name", "server", "Senders name")
 var port = flag.String("port", "4500", "Server port")
 
 func main() {
@@ -118,11 +118,11 @@ func receiveStream(msgStream grpcChat.Services_ChatServiceServer, connectedClien
 			}
 			connectedClientStreams[streamIndex] = connectedClientStreams[len(connectedClientStreams)-1]
 			connectedClientStreams = connectedClientStreams[:len(connectedClientStreams)-1]
-			sendToAllStreams(*serverName, fmt.Sprintf("Participant %s left Chitty-Chat at Lamport time %d", msg.SenderID, lamportTimestamp))
+			sendToAllStreams(*serverName, fmt.Sprintf("Participant %s left Chitty-Chat", msg.SenderID))
 			errorChannel <- err
 			return
 		case "greetingSecretCode":
-			sendToAllStreams(*serverName, fmt.Sprintf("Participant %s joined Chitty-Chat at Lamport time %d", msg.SenderID, lamportTimestamp+1))
+			sendToAllStreams(*serverName, fmt.Sprintf("Participant %s joined Chitty-Chat", msg.SenderID))
 		default:
 			messagesObject.mutex.Lock()
 
