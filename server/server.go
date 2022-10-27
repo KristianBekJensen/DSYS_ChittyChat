@@ -110,12 +110,6 @@ func receiveStream(msgStream grpcChat.Services_ChatServiceServer, connectedClien
 		}
 		switch msg.Message {
 		case "bye":
-			ack := &grpcChat.ServerMessage{
-				Message:  fmt.Sprintf("GoodBye: %s", msg.SenderID),
-				SenderID: *serverName,
-			}
-			msgStream.Send(ack)
-
 			var streamIndex int
 			for i := 0; i < len(connectedClientStreams); i++ {
 				if connectedClientStreams[i].name == connectedClientID {
@@ -127,6 +121,7 @@ func receiveStream(msgStream grpcChat.Services_ChatServiceServer, connectedClien
 			connectedClientStreams = connectedClientStreams[:len(connectedClientStreams)-1]
 			sendToAllStreams(*serverName, fmt.Sprintf("Participant %s left Chitty-Chat at Lamport time %d", msg.SenderID, lamportTimestamp))
 			errorChannel <- err
+            return
 		case "greetingSecretCode":
 			sendToAllStreams(*serverName, fmt.Sprintf("Participant %s joined Chitty-Chat at Lamport time %d", msg.SenderID, lamportTimestamp+1))
 		default:
