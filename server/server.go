@@ -1,6 +1,7 @@
 package main
 
 import (
+    "io"
 	"flag"
 	"fmt"
 	"log"
@@ -52,7 +53,9 @@ func main() {
 	}
 	defer file.Close()
 
-	log.SetOutput(file)
+	multiWriter := io.MultiWriter(os.Stdout, file)
+	log.SetOutput(multiWriter)
+
 	flag.Parse()
 	log.Println(".:server is starting:.")
 	launchServer()

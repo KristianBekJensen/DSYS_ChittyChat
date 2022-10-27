@@ -49,15 +49,11 @@ func main() {
 	if err != nil {
 		log.Fatalf("Failed to call ChatService: %v", err)
 	}
-	greeting := &grpcChat.ClientMessage{
-		Message:  "greetingSecretCode",
-		SenderID: *clientsName,
-	}
-	msgStream.Send(greeting)
 	clientHandle := clientHandle{
 		stream:     msgStream,
 		clientName: *clientsName,
 	}
+    clientHandle.sendMessage("greetingSecretCode")
 	go clientHandle.bindStdinToServerStream(shutDown)
 	go clientHandle.streamListener(shutDown)
 
@@ -106,19 +102,9 @@ func (clientHandle *clientHandle) bindStdinToServerStream(shutDown chan bool) {
 			clientMessage = getStdIn()
 		}
 
-		lamportTimestamp++
 
-		message := &grpcChat.ClientMessage{
-			SenderID:    *clientsName,
-			Message:     clientMessage,
-			LamportTime: lamportTimestamp,
-		}
-
-		err := clientHandle.stream.Send(message)
-		if err != nil {
-			log.Printf("Error when sending message to stream: %v", err)
-		}
-		if message.Message == "bye" {
+        clientHandle.sendMessage(clientMessage)
+		if clientMessage == "bye" {
 			log.Println("Shutting down")
 			shutDown <- true
 		}
