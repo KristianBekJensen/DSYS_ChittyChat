@@ -1,9 +1,9 @@
 package main
 
 import (
-    "io"
 	"flag"
 	"fmt"
+	"io"
 	"log"
 	"net"
 	"os"
@@ -37,7 +37,6 @@ type connectedClient struct {
 	stream grpcChat.Services_ChatServiceServer
 }
 
-// TODO: Should this be stored in server
 var messagesObject = messages{}
 var connectedClientStreams = []connectedClient{}
 var connectedClientsAmount int
@@ -88,7 +87,7 @@ func (s *Server) ChatService(msgStream grpcChat.Services_ChatServiceServer) erro
 		stream: msgStream,
 		name:   connectedClientID,
 	})
-	connectedClientsAmount++ //TODO: not atomic with read above
+	connectedClientsAmount++
 
 	errorChannel := make(chan error)
 	go receiveStream(msgStream, connectedClientID, errorChannel)
@@ -121,7 +120,7 @@ func receiveStream(msgStream grpcChat.Services_ChatServiceServer, connectedClien
 			connectedClientStreams = connectedClientStreams[:len(connectedClientStreams)-1]
 			sendToAllStreams(*serverName, fmt.Sprintf("Participant %s left Chitty-Chat at Lamport time %d", msg.SenderID, lamportTimestamp))
 			errorChannel <- err
-            return
+			return
 		case "greetingSecretCode":
 			sendToAllStreams(*serverName, fmt.Sprintf("Participant %s joined Chitty-Chat at Lamport time %d", msg.SenderID, lamportTimestamp+1))
 		default:

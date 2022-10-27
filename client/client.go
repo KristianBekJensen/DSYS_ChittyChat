@@ -18,8 +18,8 @@ import (
 var clientsName = flag.String("name", "default", "Senders name")
 var serverPort = flag.String("server", "4500", "Tcp server")
 
-var client grpcChat.ServicesClient //TODO: the client right???
-var ServerConn *grpc.ClientConn    //the server connection
+var client grpcChat.ServicesClient
+var ServerConn *grpc.ClientConn
 
 type clientHandle struct {
 	stream     grpcChat.Services_ChatServiceClient
@@ -53,7 +53,7 @@ func main() {
 		stream:     msgStream,
 		clientName: *clientsName,
 	}
-    clientHandle.sendMessage("greetingSecretCode")
+	clientHandle.sendMessage("greetingSecretCode")
 	go clientHandle.bindStdinToServerStream(shutDown)
 	go clientHandle.streamListener(shutDown)
 
@@ -102,8 +102,7 @@ func (clientHandle *clientHandle) bindStdinToServerStream(shutDown chan bool) {
 			clientMessage = getStdIn()
 		}
 
-
-        clientHandle.sendMessage(clientMessage)
+		clientHandle.sendMessage(clientMessage)
 		if clientMessage == "bye" {
 			log.Println("Shutting down")
 			shutDown <- true
