@@ -132,7 +132,7 @@ func receiveStream(msgStream grpcChat.Services_ChatServiceServer, connectedClien
 			})
 			messagesObject.mutex.Unlock()
 			objectBodyReceived := messagesObject.messageQue[len(messagesObject.messageQue)-1]
-			log.Printf("Message recieved as: %s\nfrom: %s\n at lamport time stamp: %d\n", objectBodyReceived.MessageBody, objectBodyReceived.SenderID, lamportTimestamp)
+			log.Printf("Message recieved as: %s\nfrom: %s \nat lamport time stamp: %d\n", objectBodyReceived.MessageBody, objectBodyReceived.SenderID, lamportTimestamp)
 		}
 	}
 }

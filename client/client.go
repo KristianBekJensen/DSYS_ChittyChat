@@ -9,6 +9,7 @@ import (
 	"log"
 	"os"
 	"strings"
+	"time"
 
 	grpcChat "github.com/kbekj/DSYS_ChittyChat/proto"
 	"google.golang.org/grpc"
@@ -113,6 +114,7 @@ func (clientHandle *clientHandle) bindStdinToServerStream(shutDown chan bool) {
 func (clientHandle *clientHandle) streamListener(shutDown chan bool) {
 	for {
 		msg, err := clientHandle.stream.Recv()
+		time.Sleep(1 * time.Second / 5)
 		if err != nil {
 			log.Printf("Couldn't receive message from server: %v", err)
 		}
